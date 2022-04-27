@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const morgan = require("morgan");
 const app = express();
 
 app.set("view engine", "ejs");
@@ -11,6 +12,10 @@ const createPath = (page) => path.resolve(__dirname, "ejs-views", `${page}.ejs`)
 app.listen(PORT, (error) => {
   error ? console.log(error) : console.log(`Listening port ${PORT}`);
 });
+
+app.use("", morgan(":method :url :status :res[content-length] - :response-time ms"));
+
+app.use("/css", express.static("css"));
 
 app.get("/", (req, res) => {
   const title = "Home";
@@ -29,12 +34,35 @@ app.get("/contacts", (req, res) => {
 
 app.get("/posts/:id", (req, res) => {
   const title = "Post";
-  res.render(createPath("post"), { title });
+  const post = {
+    id: 1,
+    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
+    title: "Post title",
+    date: "05.05.2021",
+    author: "Yauhen",
+  };
+  res.render(createPath("post"), { title, post });
 });
 
 app.get("/posts", (req, res) => {
   const title = "Posts";
-  res.render(createPath("posts"), { title });
+  const posts = [
+    {
+      id: 1,
+      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
+      title: "Post title",
+      date: "05.05.2021",
+      author: "Yauhen",
+    },
+    {
+      id: 2,
+      text: " Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
+      title: "Post title 2",
+      date: "05.05.2020",
+      author: "Jone",
+    },
+  ];
+  res.render(createPath("posts"), { title, posts });
 });
 
 app.get("/add-post", (req, res) => {
