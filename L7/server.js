@@ -2,21 +2,19 @@ const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
 const app = express();
-
-app.set("view engine", "ejs");
-
 const PORT = 3000;
 
 const createPath = (page) => path.resolve(__dirname, "ejs-views", `${page}.ejs`);
+
+app.set("view engine", "ejs");
 
 app.listen(PORT, (error) => {
   error ? console.log(error) : console.log(`Listening port ${PORT}`);
 });
 
 app.use("", morgan(":method :url :status :res[content-length] - :response-time ms"));
-
+app.use(express.urlencoded({ extended: false }));
 app.use("/css", express.static("css"));
-
 app.get("/", (req, res) => {
   const title = "Home";
   res.render(createPath("index"), { title });
@@ -42,6 +40,18 @@ app.get("/posts/:id", (req, res) => {
     author: "Yauhen",
   };
   res.render(createPath("post"), { title, post });
+});
+
+app.post("/add-post", (req, res) => {
+  const { title, author, text } = req.body;
+  const post = {
+    id: new Date(),
+    date: new Date().toLocaleDateString(),
+    title,
+    author,
+    text,
+  };
+  res.render(createPath("post"), { post, title });
 });
 
 app.get("/posts", (req, res) => {
