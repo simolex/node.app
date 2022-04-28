@@ -1,10 +1,20 @@
 const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
+const mongoose = require("mongoose");
+const Post = require("./models/post");
 const app = express();
 const PORT = 3000;
 
+const db =
+  "mongodb://uv6otckgououvxt689qu:VbiMSCDFxL7S03WgwW9x@bkkkntiskw3klkk-mongodb.services.clever-cloud.com:27017/bkkkntiskw3klkk";
+
 const createPath = (page) => path.resolve(__dirname, "ejs-views", `${page}.ejs`);
+
+mongoose
+  .connect(db)
+  .then((res) => console.log("Connect to DB"))
+  .catch((error) => console.log(error));
 
 app.set("view engine", "ejs");
 
@@ -44,14 +54,18 @@ app.get("/posts/:id", (req, res) => {
 
 app.post("/add-post", (req, res) => {
   const { title, author, text } = req.body;
-  const post = {
-    id: new Date(),
-    date: new Date().toLocaleDateString(),
+  const post = new Post({
     title,
     author,
     text,
-  };
-  res.render(createPath("post"), { post, title });
+  });
+  post
+    .save()
+    .then((result) => res.send(result))
+    .catch((error) => {
+      console.log(error);
+      res.render(createPath("error"), { title: "Error" });
+    });
 });
 
 app.get("/posts", (req, res) => {
