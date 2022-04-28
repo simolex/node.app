@@ -1,15 +1,15 @@
 const express = require("express");
-const path = require("path");
+const methodOverride = require("method-override");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
-const Post = require("./models/post");
+const postRoutes = require("./routes/post-routes");
+const contactRoutes = require("./routes/contact-routes");
+const createPath = require("./helpers/create-path");
 const app = express();
 const PORT = 3000;
 
 const db =
   "mongodb://uv6otckgououvxt689qu:VbiMSCDFxL7S03WgwW9x@bkkkntiskw3klkk-mongodb.services.clever-cloud.com:27017/bkkkntiskw3klkk";
-
-const createPath = (page) => path.resolve(__dirname, "ejs-views", `${page}.ejs`);
 
 mongoose
   .connect(db)
@@ -25,78 +25,14 @@ app.listen(PORT, (error) => {
 app.use("", morgan(":method :url :status :res[content-length] - :response-time ms"));
 app.use(express.urlencoded({ extended: false }));
 app.use("/css", express.static("css"));
+app.use(methodOverride("_method"));
 app.get("/", (req, res) => {
   const title = "Home";
   res.render(createPath("index"), { title });
 });
 
-app.get("/contacts", (req, res) => {
-  const title = "Contacts";
-  const contacts = [
-    { name: "c-1", link: "#" },
-    { name: "c-2", link: "#" },
-    { name: "c-3", link: "#" },
-  ];
-  res.render(createPath("contacts"), { title, contacts });
-});
-
-app.get("/posts/:id", (req, res) => {
-  const title = "Post";
-  const post = {
-    id: 1,
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
-    title: "Post title",
-    date: "05.05.2021",
-    author: "Yauhen",
-  };
-  res.render(createPath("post"), { title, post });
-});
-
-app.post("/add-post", (req, res) => {
-  const { title, author, text } = req.body;
-  const post = new Post({
-    title,
-    author,
-    text,
-  });
-  post
-    .save()
-    .then((result) => res.send(result))
-    .catch((error) => {
-      console.log(error);
-      res.render(createPath("error"), { title: "Error" });
-    });
-});
-
-app.get("/posts", (req, res) => {
-  const title = "Posts";
-  const posts = [
-    {
-      id: 1,
-      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
-      title: "Post title",
-      date: "05.05.2021",
-      author: "Yauhen",
-    },
-    {
-      id: 2,
-      text: " Sapiente quidem provident, dolores, vero laboriosam nemo mollitia impedit unde fugit sint eveniet, minima odio ipsum sed recusandae aut iste aspernatur dolorem.",
-      title: "Post title 2",
-      date: "05.05.2020",
-      author: "Jone",
-    },
-  ];
-  res.render(createPath("posts"), { title, posts });
-});
-
-app.get("/add-post", (req, res) => {
-  const title = "New Post";
-  res.render(createPath("add-post"), { title });
-});
-
-app.get("/about-us", (req, res) => {
-  res.redirect("/contacts");
-});
+app.use(postRoutes);
+app.use(contactRoutes);
 
 app.use((req, res) => {
   const title = "Error";
